@@ -10,6 +10,11 @@ type BrandMarkProps = {
 /**
  * The Reps app icon: a green diagonal capsule on a dark rounded square.
  * Rendered inline as SVG so it stays crisp and can be animated via GSAP.
+ *
+ * The 20° tilt lives on a wrapping <g> about the tile centre (20,20), and the
+ * capsule itself is centred in its own box — so it sits dead-centre in the
+ * tile, and any GSAP transform on the bar pivots about the bar's own centre
+ * rather than drifting off-centre.
  */
 export function BrandMark({
   size = 24,
@@ -34,17 +39,17 @@ export function BrandMark({
         fill="#141416"
         stroke="rgba(255,255,255,0.0824)"
       />
-      <rect
-        {...(animatedBar ? { "data-mark-bar": "" } : {})}
-        x="17.25"
-        y="7.5"
-        width="5.5"
-        height="25"
-        rx="2.75"
-        fill="#2EE59D"
-        transform="rotate(20 20 20)"
-        style={{ transformOrigin: "20px 20px" }}
-      />
+      <g transform="rotate(20 20 20)">
+        <rect
+          {...(animatedBar ? { "data-mark-bar": "" } : {})}
+          x="17.25"
+          y="7.5"
+          width="5.5"
+          height="25"
+          rx="2.75"
+          fill="#2EE59D"
+        />
+      </g>
     </svg>
   );
 }

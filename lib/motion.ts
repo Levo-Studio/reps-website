@@ -25,13 +25,15 @@ function clock(totalSeconds: number): string {
 export function playEntrance(root: HTMLElement, blockOffset = 18): void {
   const bar = root.querySelector<SVGElement>("[data-mark-bar]");
   if (bar && !prefersReducedMotion()) {
+    // The 20° tilt lives on the parent <g>; here we only grow/settle the bar
+    // about its own centre so it lands dead-centre in the tile.
     gsap.from(bar, {
       scaleY: 0,
       rotate: -12,
       opacity: 0,
       duration: 0.7,
       ease: "power3.out",
-      transformOrigin: "20px 20px",
+      transformOrigin: "50% 50%",
     });
   }
 
@@ -77,17 +79,22 @@ export function playEntrance(root: HTMLElement, blockOffset = 18): void {
   });
 
   root.querySelectorAll<HTMLElement>("[data-rule]").forEach((rule) => {
-    gsap.set(rule, { scaleX: 0, transformOrigin: "left center" });
-    // The section divider wipes in on the way down and retracts to its
-    // original state when scrolled back up past the trigger.
-    ScrollTrigger.create({
-      trigger: rule,
-      start: "top 98%",
-      onEnter: () =>
-        gsap.to(rule, { scaleX: 1, duration: 0.8, ease: "power2.inOut" }),
-      onLeaveBack: () =>
-        gsap.to(rule, { scaleX: 0, duration: 0.6, ease: "power2.inOut" }),
-    });
+    // The section divider wipes in on the way down and reverses back to its
+    // original (undrawn) state when scrolled back up past the trigger.
+    gsap.fromTo(
+      rule,
+      { scaleX: 0, transformOrigin: "left center" },
+      {
+        scaleX: 1,
+        duration: 0.8,
+        ease: "power2.inOut",
+        scrollTrigger: {
+          trigger: rule,
+          start: "top 98%",
+          toggleActions: "play none none reverse",
+        },
+      },
+    );
   });
 }
 
