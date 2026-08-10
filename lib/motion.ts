@@ -79,19 +79,20 @@ export function playEntrance(root: HTMLElement, blockOffset = 18): void {
   });
 
   root.querySelectorAll<HTMLElement>("[data-rule]").forEach((rule) => {
-    // The section divider wipes in on the way down and reverses back to its
-    // original (undrawn) state when scrolled back up past the trigger.
+    // The section divider is scrubbed to scroll position: it draws in as the
+    // boundary rises from the bottom of the viewport to its centre, and — the
+    // whole point — visibly retracts in real time as you scroll back up.
     gsap.fromTo(
       rule,
       { scaleX: 0, transformOrigin: "left center" },
       {
         scaleX: 1,
-        duration: 0.8,
-        ease: "power2.inOut",
+        ease: "none",
         scrollTrigger: {
           trigger: rule,
-          start: "top 98%",
-          toggleActions: "play none none reverse",
+          start: "top bottom",
+          end: "top center",
+          scrub: true,
         },
       },
     );
@@ -131,7 +132,7 @@ export function playLandingExtras(root: HTMLElement): void {
       repeat: -1,
       onUpdate: () => {
         ring.setAttribute("stroke-dashoffset", String(201 * state.p));
-        ringLabel.textContent = clock(90 * (1 - state.p));
+        ringLabel.textContent = clock(120 * (1 - state.p));
       },
     });
   }
@@ -151,7 +152,7 @@ export function playLandingExtras(root: HTMLElement): void {
       scrub: true,
       onUpdate: (self) => {
         const t = self.progress;
-        const label = clock(90 * (1 - t));
+        const label = clock(120 * (1 - t));
         if (bigRing)
           bigRing.setAttribute("stroke-dashoffset", (879.6 * t).toFixed(1));
         if (bigCount) bigCount.textContent = label;

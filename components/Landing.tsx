@@ -405,7 +405,7 @@ export function Landing() {
                       color: "#2EE59D",
                     }}
                   >
-                    1:30
+                    2:00
                   </span>
                 </div>
               </div>
@@ -550,7 +550,7 @@ export function Landing() {
                     fontVariantNumeric: "tabular-nums",
                   }}
                 >
-                  1:30
+                  2:00
                 </span>
                 <span
                   style={{
@@ -615,7 +615,7 @@ export function Landing() {
                       fontVariantNumeric: "tabular-nums",
                     }}
                   >
-                    1:30
+                    2:00
                   </span>
                 </div>
                 <p
