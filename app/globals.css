@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: #141416;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+a {
+  color: #2ee59d;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 1px solid #2ee59d;
+  outline-offset: 4px;
+}
+
+/* Text-reveal mask used by the heading line-by-line entrance */
+.mask {
+  display: block;
+  overflow: hidden;
+  padding: 0.16em 0;
+  margin: -0.16em 0;
+}
+
+.mask > * {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Everything settles to its resting state when motion is disabled */
+  .mask > *,
+  [data-in],
+  [data-rule] {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
