@@ -78,12 +78,15 @@ export function playEntrance(root: HTMLElement, blockOffset = 18): void {
 
   root.querySelectorAll<HTMLElement>("[data-rule]").forEach((rule) => {
     gsap.set(rule, { scaleX: 0, transformOrigin: "left center" });
+    // The section divider wipes in on the way down and retracts to its
+    // original state when scrolled back up past the trigger.
     ScrollTrigger.create({
       trigger: rule,
       start: "top 98%",
-      once: true,
       onEnter: () =>
         gsap.to(rule, { scaleX: 1, duration: 0.8, ease: "power2.inOut" }),
+      onLeaveBack: () =>
+        gsap.to(rule, { scaleX: 0, duration: 0.6, ease: "power2.inOut" }),
     });
   });
 }
