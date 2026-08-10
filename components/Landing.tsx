@@ -8,12 +8,20 @@ import { APP_STORE_URL, GITHUB_APP_URL, GITHUB_WEBSITE_URL } from "@/lib/site";
 
 const HAIRLINE = "rgba(255,255,255,0.0824)";
 const RULE_BG = "rgba(255,255,255,0.34)";
+// The animated section divider is its own line (no static border underneath),
+// so its wipe-in / wipe-out is actually visible. Kept restrained but a touch
+// brighter than the 8.24% hairline so the motion reads.
+const DIVIDER = "rgba(255,255,255,0.16)";
 
 const monoLabel: React.CSSProperties = {
   fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
 };
 
-/** Absolutely-positioned section top rule that wipes in on scroll. */
+/**
+ * Absolutely-positioned section divider that wipes in on scroll-down and
+ * retracts on scroll-up. It is the only line at the section boundary — there is
+ * no static border beneath it — so both directions of the wipe are visible.
+ */
 function Rule() {
   return (
     <span
@@ -24,7 +32,7 @@ function Rule() {
         left: 0,
         right: 0,
         height: 1,
-        background: RULE_BG,
+        background: DIVIDER,
         transform: "scaleX(0)",
         transformOrigin: "left center",
       }}
@@ -259,7 +267,7 @@ export function Landing() {
           id="log"
           aria-label="Logging"
           data-row
-          style={{ borderTop: `1px solid ${HAIRLINE}`, position: "relative" }}
+          style={{ position: "relative" }}
         >
           <Rule />
           <div
@@ -457,9 +465,9 @@ export function Landing() {
           style={{
             height: "230vh",
             position: "relative",
-            borderTop: `1px solid ${HAIRLINE}`,
           }}
         >
+          <Rule />
           <div
             style={{
               position: "sticky",
@@ -649,7 +657,7 @@ export function Landing() {
         <section
           aria-label="Everything else"
           data-row
-          style={{ borderTop: `1px solid ${HAIRLINE}`, position: "relative" }}
+          style={{ position: "relative" }}
         >
           <Rule />
           <div
@@ -766,7 +774,7 @@ export function Landing() {
         <section
           aria-label="Privacy"
           data-row
-          style={{ borderTop: `1px solid ${HAIRLINE}`, position: "relative" }}
+          style={{ position: "relative" }}
         >
           <Rule />
           <div
@@ -886,7 +894,7 @@ export function Landing() {
         <section
           aria-label="Summary"
           data-row
-          style={{ borderTop: `1px solid ${HAIRLINE}`, position: "relative" }}
+          style={{ position: "relative" }}
         >
           <Rule />
           <div
@@ -1067,7 +1075,7 @@ export function Landing() {
         <section
           aria-label="Open source"
           data-row
-          style={{ borderTop: `1px solid ${HAIRLINE}`, position: "relative" }}
+          style={{ position: "relative" }}
         >
           <Rule />
           <div
@@ -1196,7 +1204,7 @@ export function Landing() {
         <section
           aria-label="Download"
           data-row
-          style={{ borderTop: `1px solid ${HAIRLINE}`, position: "relative" }}
+          style={{ position: "relative" }}
         >
           <Rule />
           <div
