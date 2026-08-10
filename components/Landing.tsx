@@ -489,8 +489,8 @@ export function Landing() {
             <div
               style={{
                 position: "relative",
-                width: "min(30vh,300px)",
-                height: "min(30vh,300px)",
+                width: "min(30vh,72vw,300px)",
+                height: "min(30vh,72vw,300px)",
               }}
             >
               <svg
@@ -573,7 +573,8 @@ export function Landing() {
             {/* Lock Screen Live Activity */}
             <div
               style={{
-                width: "min(520px,100%)",
+                width: "100%",
+                maxWidth: 520,
                 background: "#1C1C1E",
                 border: `1px solid ${HAIRLINE}`,
                 padding: "14px 16px",
@@ -599,6 +600,7 @@ export function Landing() {
                     data-live-count
                     style={{
                       ...monoLabel,
+                      flex: "none",
                       fontSize: 16,
                       fontWeight: 600,
                       color: "#2EE59D",
@@ -1310,18 +1312,30 @@ export function SiteFooter({ homeHref = "#" }: { homeHref?: string }) {
           }}
         >
           {homeHref === "#" ? (
-            <a href="/privacy" style={{ color: "#8E8E93" }}>
+            <a
+              href="/privacy"
+              className="text-muted transition-colors hover:!text-white"
+            >
               Privacy
             </a>
           ) : (
-            <a href={homeHref} style={{ color: "#8E8E93" }}>
+            <a
+              href={homeHref}
+              className="text-muted transition-colors hover:!text-white"
+            >
               Home
             </a>
           )}
-          <a href={GITHUB_APP_URL} style={{ color: "#8E8E93" }}>
+          <a
+            href={GITHUB_APP_URL}
+            className="text-muted transition-colors hover:!text-white"
+          >
             GitHub
           </a>
-          <a href={APP_STORE_URL} style={{ color: "#8E8E93" }}>
+          <a
+            href={APP_STORE_URL}
+            className="text-muted transition-colors hover:!text-white"
+          >
             App Store
           </a>
           <span style={{ ...monoLabel, color: "#8E8E93" }}>© Levo Studio</span>

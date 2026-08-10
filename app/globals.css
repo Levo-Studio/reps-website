@@ -8,6 +8,8 @@ html {
 
 body {
   margin: 0;
+  /* Belt-and-braces against horizontal scroll on small screens. */
+  overflow-x: hidden;
   background: #141416;
   color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
