@@ -13,8 +13,9 @@ export const SITE_DESCRIPTION =
   "Reps is a minimalist, private, local iOS workout tracker. Log weight × reps, let the rest timer run, and leave — no account, no cloud, no tracking.";
 export const PUBLISHER = "Levo Studio";
 
-/** App Store link. Placeholder until the listing is live. */
-export const APP_STORE_URL = "#";
+/** App Store listing. */
+export const APP_STORE_URL =
+  "https://apps.apple.com/us/app/reps-lift-tracker/id6799562219";
 
 export const GITHUB_APP_URL = "https://github.com/levo-studio/reps";
 export const GITHUB_WEBSITE_URL = "https://github.com/levo-studio/reps-website";
