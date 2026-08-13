@@ -65,7 +65,8 @@ jobs:
 
       - name: Verify image exists on GHCR
         run: |
-          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:sha-${{ github.sha }}"
+          REPO=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="${{ env.REGISTRY }}/${REPO}:sha-${{ github.sha }}"
           echo "Verifying $IMAGE"
           docker buildx imagetools inspect "$IMAGE"
 
