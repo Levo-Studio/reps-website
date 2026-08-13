@@ -77,6 +77,7 @@ jobs:
       - name: Trigger deployment webhook
         run: |
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            -L --post301 --post302 --post303 \
             "${{ secrets.DEPLOYMENT_WEBHOOK_URL }}")
           echo "Webhook responded with $STATUS"
           if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
