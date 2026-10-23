@@ -53,7 +53,7 @@ const DETAIL: ReadonlyArray<{ h: string; p: string }> = [
   },
   {
     h: "This website",
-    p: "No cookies, no analytics, no tracking scripts. The site is served as static pages, and its source is public.",
+    p: "No cookies, no analytics, no tracking scripts. The site is served as static pages, and its source is public. It is hosted by Scaleway SAS (Paris, France) in data centres in Amsterdam, the Netherlands. To deliver the pages and keep the site secure, Scaleway briefly processes technically necessary access data (IP address, time, requested page, browser) in server logs on behalf of Levo Studio (Art. 28 GDPR). The legal basis is Art. 6(1)(f) GDPR. DNS is provided by DNScale OÜ (Tallinn, Estonia). None of this is linked to your use of the app.",
   },
 ];
 
@@ -160,7 +160,7 @@ export function Privacy() {
           >
             <span style={{ color: "#2EE59D" }}>000</span>
             <span style={{ flex: 1, height: 1, background: HAIRLINE }} />
-            <span>Updated 10 Aug 2026</span>
+            <span>Updated 23 Oct 2026</span>
           </div>
           <h1
             style={{
