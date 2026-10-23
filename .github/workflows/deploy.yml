@@ -8,15 +8,17 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  # Scaleway Container Registry (Amsterdam, privat)
+  SCW_REGISTRY: rg.nl-ams.scw.cloud
+  SCW_IMAGE_NAME: levo-studio/reps-website
+  SCW_REGION: nl-ams
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-    outputs:
-      digest: ${{ steps.build.outputs.digest }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,14 +31,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to Scaleway Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.SCW_REGISTRY }}
+          username: nologin
+          password: ${{ secrets.SCW_SECRET_KEY }}
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ env.SCW_REGISTRY }}/${{ env.SCW_IMAGE_NAME }}
           tags: |
-            type=raw,value=latest
+            type=raw,value=build-${{ github.run_number }}
             type=sha,format=long
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push
         id: build
@@ -50,37 +62,41 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  verify:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    permissions:
-      packages: read
-    steps:
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Verify image exists on GHCR
+      - name: Verify pushed image digest
         run: |
-          REPO=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
-          IMAGE="${{ env.REGISTRY }}/${REPO}:sha-${{ github.sha }}"
-          echo "Verifying $IMAGE"
-          docker buildx imagetools inspect "$IMAGE"
+          IMAGE="${SCW_REGISTRY}/${SCW_IMAGE_NAME}@${{ steps.build.outputs.digest }}"
+          docker buildx imagetools inspect "$IMAGE" >/dev/null
+          echo "pushed image digest is available: $IMAGE"
 
-  deploy:
-    needs: verify
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger deployment webhook
+      # Scaleway: Container auf das neue Image umstellen. Läuft erst, wenn die
+      # Repository-Variable SCW_CONTAINER_ID gesetzt ist (nach Anlegen des Containers).
+      - name: Deploy to Scaleway Serverless Containers
+        if: ${{ vars.SCW_CONTAINER_ID != '' }}
+        env:
+          SCW_SECRET_KEY: ${{ secrets.SCW_SECRET_KEY }}
+          SCW_CONTAINER_ID: ${{ vars.SCW_CONTAINER_ID }}
+          NEW_IMAGE: ${{ env.SCW_REGISTRY }}/${{ env.SCW_IMAGE_NAME }}:build-${{ github.run_number }}
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-            -L --post301 --post302 --post303 \
-            "${{ secrets.DEPLOYMENT_WEBHOOK_URL }}")
-          echo "Webhook responded with $STATUS"
-          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
-            echo "Deployment webhook failed"
-            exit 1
-          fi
+          set -euo pipefail
+          API="https://api.scaleway.com/containers/v1/regions/${SCW_REGION}/containers/${SCW_CONTAINER_ID}"
+
+          echo "Updating container to ${NEW_IMAGE} ..."
+          curl --fail-with-body --silent --show-error -X PATCH "$API" \
+            -H "X-Auth-Token: ${SCW_SECRET_KEY}" -H "Content-Type: application/json" \
+            -d "{\"image\": \"${NEW_IMAGE}\"}" >/dev/null
+
+          sleep 10
+          for i in $(seq 1 60); do
+            BODY="$(curl --fail --silent --show-error "$API" -H "X-Auth-Token: ${SCW_SECRET_KEY}")"
+            STATUS="$(echo "$BODY" | jq -r '.status')"
+            IMAGE="$(echo "$BODY" | jq -r '.image')"
+            echo "status: ${STATUS}"
+            if [ "$STATUS" = "ready" ] && [ "$IMAGE" = "$NEW_IMAGE" ]; then
+              echo "Deployment completed: ${IMAGE}"; exit 0
+            fi
+            if [ "$STATUS" = "error" ]; then
+              echo "Deployment failed – see Scaleway console logs."; exit 1
+            fi
+            sleep 10
+          done
+          echo "Timed out waiting for deployment."; exit 1

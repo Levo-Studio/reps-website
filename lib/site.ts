@@ -4,7 +4,7 @@
  * production hostname.
  */
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://reps.levostudio.dev"
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://reps.levo-studio.com"
 ).replace(/\/$/, "");
 
 export const SITE_NAME = "Reps";
