@@ -25,6 +25,19 @@ async function progressWidth(page: Page): Promise<number> {
     .evaluate((el) => parseFloat((el as HTMLElement).style.width) || 0);
 }
 
+/** Jumps to a fraction of the scrollable height and waits until it lands. */
+async function scrollToFraction(page: Page, fraction: number): Promise<void> {
+  const target = await page.evaluate((f) => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const top = Math.round(max * f);
+    window.scrollTo({ top, behavior: "instant" });
+    return top;
+  }, fraction);
+  await expect
+    .poll(() => page.evaluate(() => Math.round(window.scrollY)))
+    .toBe(target);
+}
+
 const PAGES = ["/", "/privacy"] as const;
 
 for (const reducedMotion of ["reduce", "no-preference"] as const) {
@@ -100,20 +113,17 @@ for (const reducedMotion of ["reduce", "no-preference"] as const) {
       expect(start).toBeLessThan(5);
 
       // Halfway: the bar has moved but is not full yet.
-      await page.evaluate(() =>
-        window.scrollTo(0, document.documentElement.scrollHeight / 2),
-      );
+      await scrollToFraction(page, 0.5);
       await expect.poll(() => progressWidth(page)).toBeGreaterThan(start);
       expect(await progressWidth(page)).toBeLessThan(100);
 
       // Bottom: the bar is full and the closing call to action is on screen.
-      await page.keyboard.press("End");
+      await scrollToFraction(page, 1);
       await expect.poll(() => progressWidth(page)).toBeGreaterThanOrEqual(99);
       await expect(page.locator("footer")).toBeInViewport();
 
       // The bar tracks furthest progress and does not rewind.
-      await page.keyboard.press("Home");
-      await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+      await scrollToFraction(page, 0);
       expect(await progressWidth(page)).toBeGreaterThanOrEqual(99);
 
       expect(errors).toEqual([]);
