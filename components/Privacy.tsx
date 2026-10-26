@@ -118,7 +118,7 @@ export function Privacy() {
           </a>
           <a
             href="/"
-            className="text-muted transition-colors hover:text-white!"
+            className="text-muted transition-[color,background-color,border-color,text-decoration-color,fill,stroke] hover:text-white!"
             style={{
               ...monoLabel,
               fontSize: 11,
