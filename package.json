@@ -9,7 +9,8 @@
     "start": "next start -p 6043",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "e2e:serve": "next build && rm -rf .next/standalone/.next/static .next/standalone/public && cp -R .next/static .next/standalone/.next/static && cp -R public .next/standalone/public && node .next/standalone/server.js"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
