@@ -179,3 +179,33 @@ test("unknown routes return 404", async ({ page }) => {
   const response = await page.goto("/this-route-does-not-exist");
   expect(response?.status()).toBe(404);
 });
+
+// Links fade their text colour on hover. Only colours transition: the focus
+// ring must appear at once rather than fade in with the link colour.
+for (const path of ["/", "/privacy"]) {
+  test(`links on ${path} transition their colours but not the focus ring`, async ({
+    page,
+  }) => {
+    await page.goto(path);
+    const transitions = await page.locator("a").evaluateAll((links) =>
+      links
+        .map((link) => getComputedStyle(link))
+        .filter((style) => style.transitionProperty.includes("color"))
+        .map((style) => ({
+          property: style.transitionProperty,
+          duration: style.transitionDuration,
+          easing: style.transitionTimingFunction,
+        })),
+    );
+
+    expect(transitions.length).toBeGreaterThan(0);
+    for (const transition of transitions) {
+      expect(transition).toEqual({
+        property:
+          "color, background-color, border-color, text-decoration-color, fill, stroke",
+        duration: "0.15s",
+        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+      });
+    }
+  });
+}

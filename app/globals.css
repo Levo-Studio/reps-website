@@ -1,39 +1,67 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss' source(none);
 
-html {
-  -webkit-text-size-adjust: 100%;
+/* Same class scan scope as the former Tailwind v3 `content` setting. */
+@source '../app/**/*.{ts,tsx}';
+@source '../components/**/*.{ts,tsx}';
+
+@theme {
+  --color-ink: #141416;
+  --color-card: #1c1c1e;
+  --color-accent: #2ee59d;
+  --color-muted: #8e8e93;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-body {
-  margin: 0;
-  /* Belt-and-braces against horizontal scroll on small screens. */
-  overflow-x: hidden;
-  background: #141416;
-  color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
+/*
+  Tailwind v4 only applies `hover:` on devices with a hovering pointer. Keep
+  the plain :hover behaviour so touch devices react to taps as before.
+*/
+@custom-variant hover (&:hover);
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/*
+  Element defaults live in the base layer, as they did relative to the
+  utilities in Tailwind v3: utility classes on an element must still win
+  over these rules.
+*/
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* Tailwind v4's preflight hides the tap highlight; keep the browser default. */
+    -webkit-tap-highlight-color: initial;
+  }
 
-a {
-  color: #2ee59d;
-  text-decoration: none;
-}
+  body {
+    margin: 0;
+    /* Belt-and-braces against horizontal scroll on small screens. */
+    overflow-x: hidden;
+    background: #141416;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
 
-a:hover {
-  color: #ffffff;
-}
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-:focus-visible {
-  outline: 1px solid #2ee59d;
-  outline-offset: 4px;
+  a {
+    color: #2ee59d;
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: #ffffff;
+  }
+
+  :focus-visible {
+    outline: 1px solid #2ee59d;
+    outline-offset: 4px;
+  }
 }
 
 /* Text-reveal mask used by the heading line-by-line entrance */

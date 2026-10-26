@@ -245,7 +245,7 @@ export function Landing() {
                 </a>
                 <a
                   href="#log"
-                  className="text-muted transition-colors hover:!text-white"
+                  className="text-muted transition-[color,background-color,border-color,text-decoration-color,fill,stroke] hover:text-white!"
                   style={{
                     ...monoLabel,
                     fontSize: 11,
@@ -837,7 +837,7 @@ export function Landing() {
               <p data-in style={{ margin: "22px 0 0" }}>
                 <a
                   href="/privacy"
-                  className="text-muted transition-colors hover:!text-white"
+                  className="text-muted transition-[color,background-color,border-color,text-decoration-color,fill,stroke] hover:text-white!"
                   style={{
                     ...monoLabel,
                     fontSize: 11,
@@ -1154,7 +1154,7 @@ export function Landing() {
                   key={r.repo}
                   data-in
                   href={r.href}
-                  className="text-white transition-colors hover:!text-accent"
+                  className="text-white transition-[color,background-color,border-color,text-decoration-color,fill,stroke] hover:text-accent!"
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr auto",
@@ -1322,27 +1322,27 @@ export function SiteFooter({ homeHref = "#" }: { homeHref?: string }) {
           {homeHref === "#" ? (
             <a
               href="/privacy"
-              className="text-muted transition-colors hover:!text-white"
+              className="text-muted transition-[color,background-color,border-color,text-decoration-color,fill,stroke] hover:text-white!"
             >
               Privacy
             </a>
           ) : (
             <a
               href={homeHref}
-              className="text-muted transition-colors hover:!text-white"
+              className="text-muted transition-[color,background-color,border-color,text-decoration-color,fill,stroke] hover:text-white!"
             >
               Home
             </a>
           )}
           <a
             href={GITHUB_APP_URL}
-            className="text-muted transition-colors hover:!text-white"
+            className="text-muted transition-[color,background-color,border-color,text-decoration-color,fill,stroke] hover:text-white!"
           >
             GitHub
           </a>
           <a
             href={APP_STORE_URL}
-            className="text-muted transition-colors hover:!text-white"
+            className="text-muted transition-[color,background-color,border-color,text-decoration-color,fill,stroke] hover:text-white!"
           >
             App Store
           </a>
