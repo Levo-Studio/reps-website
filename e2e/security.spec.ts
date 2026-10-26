@@ -15,6 +15,29 @@ const CONTENT_SECURITY_POLICY = [
   "upgrade-insecure-requests",
 ].join("; ");
 
+const PERMISSIONS_POLICY = [
+  "accelerometer",
+  "autoplay",
+  "camera",
+  "display-capture",
+  "encrypted-media",
+  "fullscreen",
+  "geolocation",
+  "gyroscope",
+  "magnetometer",
+  "microphone",
+  "midi",
+  "payment",
+  "picture-in-picture",
+  "publickey-credentials-get",
+  "screen-wake-lock",
+  "serial",
+  "usb",
+  "xr-spatial-tracking",
+]
+  .map((feature) => `${feature}=()`)
+  .join(", ");
+
 /** Every route, pages and API alike, carries the same static headers. */
 function expectSecurityHeaders(response: APIResponse | null) {
   const headers = response?.headers() ?? {};
@@ -26,11 +49,7 @@ function expectSecurityHeaders(response: APIResponse | null) {
   expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
   expect(headers["x-frame-options"]).toBe("DENY");
   expect(headers["cross-origin-opener-policy"]).toBe("same-origin");
-
-  const permissions = headers["permissions-policy"] ?? "";
-  for (const feature of ["camera", "microphone", "geolocation"]) {
-    expect(permissions).toContain(`${feature}=()`);
-  }
+  expect(headers["permissions-policy"]).toBe(PERMISSIONS_POLICY);
 }
 
 for (const path of ["/", "/privacy", "/api/health"]) {
