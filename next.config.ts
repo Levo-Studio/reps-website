@@ -1,11 +1,15 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === "development";
+
 // Static policy so every page stays prerendered (a nonce would force dynamic
 // rendering). 'unsafe-inline' covers the inline scripts Next.js emits for
-// hydration and the JSON-LD block, plus the inline styles GSAP writes.
+// hydration and the JSON-LD block, plus the inline styles GSAP writes. The
+// dev server additionally needs eval (React debugging, hot reload) and runs
+// over plain HTTP, so it gets 'unsafe-eval' and no upgrade-insecure-requests.
 const contentSecurityPolicy = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
@@ -14,14 +18,13 @@ const contentSecurityPolicy = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-  "upgrade-insecure-requests",
+  ...(isDev ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
 // Browser features the site never uses, denied to the page and any frame.
 const permissionsPolicy = [
   "accelerometer",
   "autoplay",
-  "browsing-topics",
   "camera",
   "display-capture",
   "encrypted-media",
