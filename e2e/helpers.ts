@@ -1,4 +1,12 @@
 import { expect, type Page } from "@playwright/test";
+import { SITE_URL } from "../lib/site";
+
+/** Matches an absolute URL for `pathname` on the site origin. */
+export function siteUrlPattern(pathname: string): RegExp {
+  const escaped = `${SITE_URL}${pathname}`.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Next.js renders the root canonical without a trailing slash; accept both.
+  return new RegExp(`^${escaped}${pathname === "/" ? "?" : ""}$`);
+}
 
 /**
  * Collects console errors, uncaught page errors, failed requests and error

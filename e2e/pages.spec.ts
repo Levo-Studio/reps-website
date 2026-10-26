@@ -1,31 +1,44 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type APIResponse, type Page } from "@playwright/test";
 import {
   APP_STORE_URL,
   SITE_DESCRIPTION,
   SITE_TITLE,
   SITE_URL,
 } from "../lib/site";
-
-// SITE_URL is read from NEXT_PUBLIC_SITE_URL at build time, so these
-// assertions assume the tests run with the same environment as `pnpm build`.
-const siteOrigin = new URL(SITE_URL).origin;
-
-/** Asserts that an absolute URL points at the given path on the site origin. */
-function expectSiteUrl(href: string | null, pathname: string) {
-  expect(href, "expected an absolute URL").toBeTruthy();
-  const url = new URL(href ?? "");
-  expect(url.origin).toBe(siteOrigin);
-  expect(url.pathname).toBe(pathname);
-}
+import { siteUrlPattern } from "./helpers";
 
 test("site constants are well-formed", () => {
-  // The tests below compare against these constants, so guard the constants
-  // themselves against typos.
-  expect(APP_STORE_URL).toMatch(
-    /^https:\/\/apps\.apple\.com\/[a-z]{2}\/app\/[\w-]+\/id\d+$/,
+  // The tests below compare against these constants, so pin the constants
+  // themselves: a wrong App Store ID would otherwise go unnoticed.
+  expect(APP_STORE_URL).toBe(
+    "https://apps.apple.com/us/app/reps-lift-tracker/id6799562219",
   );
   expect(SITE_URL).toMatch(/^https?:\/\/[^/]+$/);
 });
+
+/** Headers every page shares: no framework banner, served as static HTML. */
+function expectStaticPageHeaders(response: APIResponse | null) {
+  const headers = response?.headers() ?? {};
+  expect(headers["x-powered-by"]).toBeUndefined();
+  // A prerendered page is shared-cacheable; a page that silently turned
+  // dynamic is sent as private / no-store instead.
+  expect(headers["cache-control"]).toMatch(/s-maxage=\d+/);
+  expect(headers["cache-control"]).not.toMatch(/private|no-store/);
+}
+
+/** The SoftwareApplication JSON-LD is rendered by the root layout. */
+async function expectJsonLd(page: Page) {
+  const jsonLd = page.locator('script[type="application/ld+json"]');
+  await expect(jsonLd).toHaveCount(1);
+  const data = JSON.parse((await jsonLd.textContent()) ?? "") as Record<
+    string,
+    unknown
+  >;
+  expect(data["@context"]).toBe("https://schema.org");
+  expect(data["@type"]).toBe("SoftwareApplication");
+  expect(data["downloadUrl"]).toBe(APP_STORE_URL);
+  expect(data["operatingSystem"]).toBe("iOS");
+}
 
 test.describe("landing page", () => {
   test("renders with metadata, structured data and the App Store link", async ({
@@ -33,19 +46,24 @@ test.describe("landing page", () => {
   }) => {
     const response = await page.goto("/");
     expect(response?.status()).toBe(200);
+    expectStaticPageHeaders(await page.request.get("/"));
 
     await expect(page).toHaveTitle(SITE_TITLE);
     await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.locator("h1")).toContainText("Track your lifts.");
 
     const head = page.locator("head");
-    expectSiteUrl(
-      await head.locator('link[rel="canonical"]').getAttribute("href"),
-      "/",
+    await expect(head.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      siteUrlPattern("/"),
     );
     await expect(head.locator('meta[name="description"]')).toHaveAttribute(
       "content",
       SITE_DESCRIPTION,
+    );
+    await expect(head.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      "index, follow",
     );
 
     // Open Graph
@@ -60,13 +78,13 @@ test.describe("landing page", () => {
       "content",
       "website",
     );
-    expectSiteUrl(
-      await head.locator('meta[property="og:url"]').getAttribute("content"),
-      "/",
+    await expect(head.locator('meta[property="og:url"]')).toHaveAttribute(
+      "content",
+      siteUrlPattern("/"),
     );
-    expectSiteUrl(
-      await head.locator('meta[property="og:image"]').getAttribute("content"),
-      "/og-badge.png",
+    await expect(head.locator('meta[property="og:image"]')).toHaveAttribute(
+      "content",
+      siteUrlPattern("/og-badge.png"),
     );
 
     // Twitter card
@@ -78,9 +96,12 @@ test.describe("landing page", () => {
       "content",
       SITE_TITLE,
     );
-    expectSiteUrl(
-      await head.locator('meta[name="twitter:image"]').getAttribute("content"),
-      "/og-badge.png",
+    await expect(
+      head.locator('meta[name="twitter:description"]'),
+    ).toHaveAttribute("content", SITE_DESCRIPTION);
+    await expect(head.locator('meta[name="twitter:image"]')).toHaveAttribute(
+      "content",
+      siteUrlPattern("/og-badge.png"),
     );
 
     // App Store calls to action: header, hero, download section, footer.
@@ -105,17 +126,7 @@ test.describe("landing page", () => {
       .evaluateAll((links) => links.map((a) => a.getAttribute("href")));
     expect(appStoreHrefs).toEqual(Array(ctas.length).fill(APP_STORE_URL));
 
-    // JSON-LD
-    const jsonLd = page.locator('script[type="application/ld+json"]');
-    await expect(jsonLd).toHaveCount(1);
-    const data = JSON.parse((await jsonLd.textContent()) ?? "") as Record<
-      string,
-      unknown
-    >;
-    expect(data["@context"]).toBe("https://schema.org");
-    expect(data["@type"]).toBe("SoftwareApplication");
-    expect(data["downloadUrl"]).toBe(APP_STORE_URL);
-    expect(data["operatingSystem"]).toBe("iOS");
+    await expectJsonLd(page);
   });
 
   test("referenced social image and favicon are served", async ({
@@ -130,16 +141,37 @@ test.describe("landing page", () => {
 });
 
 test.describe("privacy page", () => {
-  test("renders with its own title and canonical URL", async ({ page }) => {
+  test("renders with its own metadata", async ({ page }) => {
     const response = await page.goto("/privacy");
     expect(response?.status()).toBe(200);
+    expectStaticPageHeaders(await page.request.get("/privacy"));
 
     await expect(page).toHaveTitle("Privacy policy — Reps");
     await expect(page.locator("h1")).toHaveCount(1);
-    expectSiteUrl(
-      await page.locator('head link[rel="canonical"]').getAttribute("href"),
-      "/privacy",
+
+    const head = page.locator("head");
+    await expect(head.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      siteUrlPattern("/privacy"),
     );
+    await expect(head.locator('meta[name="description"]')).toHaveAttribute(
+      "content",
+      "Reps stores everything on your iPhone. No account, no cloud sync, no analytics, no third-party SDKs — nothing is sent anywhere.",
+    );
+    await expect(head.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      "index, follow",
+    );
+    await expect(head.locator('meta[property="og:title"]')).toHaveAttribute(
+      "content",
+      "Privacy policy — Reps",
+    );
+    await expect(head.locator('meta[property="og:url"]')).toHaveAttribute(
+      "content",
+      siteUrlPattern("/privacy"),
+    );
+
+    await expectJsonLd(page);
   });
 });
 

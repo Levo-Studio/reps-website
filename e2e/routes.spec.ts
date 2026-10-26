@@ -30,17 +30,18 @@ test.describe("/api/health", () => {
   });
 });
 
-test("/robots.txt allows crawling and points at the sitemap", async ({
+test("/robots.txt allows crawling and names the host and sitemap", async ({
   request,
 }) => {
   const response = await request.get("/robots.txt");
   expect(response.status()).toBe(200);
-  const body = await response.text();
+  const lines = (await response.text()).split("\n").map((line) => line.trim());
 
-  expect(body).toMatch(/^User-Agent: \*$/m);
-  expect(body).toMatch(/^Allow: \/$/m);
-  expect(body).not.toMatch(/^Disallow:/m);
-  expect(body).toContain(`Sitemap: ${SITE_URL}/sitemap.xml`);
+  expect(lines).toContain("User-Agent: *");
+  expect(lines).toContain("Allow: /");
+  expect(lines.filter((line) => line.startsWith("Disallow:"))).toEqual([]);
+  expect(lines).toContain(`Host: ${SITE_URL}`);
+  expect(lines).toContain(`Sitemap: ${SITE_URL}/sitemap.xml`);
 });
 
 test("/sitemap.xml lists the landing and privacy pages", async ({
